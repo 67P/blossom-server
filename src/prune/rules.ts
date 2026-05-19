@@ -6,7 +6,8 @@
  *   2. Prune time  — mimeToSqlLike() + parseDuration() drive expiry queries
  */
 
-import type { StorageRule } from "../config/schema.ts";
+import type { Config, StorageRule } from "../config/schema.ts";
+import { checkLdapAccess } from "../utils/ldap.ts";
 
 // ---------------------------------------------------------------------------
 // Duration parsing
@@ -104,26 +105,44 @@ export function mimeToSqlLike(ruleType: string): string {
  * @param requirePubkeyInRule   If true, pubkey must appear in rule.pubkeys for
  *                              any pubkey-scoped rule to match an anonymous upload
  */
-export function getFileRule(
+export async function getFileRule(
   opts: { mimeType: string | null; pubkey?: string },
   rules: StorageRule[],
   requirePubkeyInRule = false,
-): StorageRule | null {
+  ldapConfig?: Config["ldap"],
+): Promise<StorageRule | null> {
   const { mimeType, pubkey } = opts;
 
   for (const rule of rules) {
-    // Pubkey scoping: if the rule restricts to specific pubkeys, the uploader
-    // must be in that list. If requirePubkeyInRule is set globally, an anonymous
-    // uploader (no pubkey) can never satisfy a pubkey-scoped rule.
-    if (rule.pubkeys && rule.pubkeys.length > 0) {
-      if (!pubkey || !rule.pubkeys.includes(pubkey)) {
-        // If requirePubkeyInRule: only pubkey-scoped rules are valid gates,
+    const hasPubkeysList = rule.pubkeys && rule.pubkeys.length > 0;
+    const hasLdap = !!rule.ldap;
+
+    // Pubkey scoping: if the rule restricts to specific pubkeys or LDAP, the uploader
+    // must be authorized by at least one of them.
+    if (hasPubkeysList || hasLdap) {
+      if (!pubkey) {
+        // If requirePubkeyInRule: only pubkey/LDAP-scoped rules are valid gates,
         // so we continue searching instead of skipping to an unscoped rule.
         continue;
       }
+
+      let authorized = false;
+
+      // 1. Check static pubkeys list
+      if (hasPubkeysList && rule.pubkeys!.includes(pubkey)) {
+        authorized = true;
+      }
+
+      // 2. Check LDAP if not yet authorized
+      if (!authorized && hasLdap && ldapConfig?.enabled) {
+        authorized = await checkLdapAccess(pubkey, ldapConfig, rule.ldap!);
+      }
+
+      if (!authorized) {
+        continue;
+      }
     } else if (requirePubkeyInRule) {
-      // Rule has no pubkeys list but requirePubkeyInRule is set — skip unscoped rules.
-      // Only rules with an explicit pubkeys allowlist can grant access.
+      // Rule has no pubkeys/ldap list but requirePubkeyInRule is set — skip unscoped rules.
       continue;
     }
 

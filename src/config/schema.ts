@@ -17,6 +17,22 @@ export const StorageRuleSchema = z.object({
     .describe(
       "Optional list of Nostr pubkeys (hex) this rule applies to. When set, only blobs uploaded by one of these pubkeys are matched.",
     ),
+  ldap: z
+    .object({
+      filter: z
+        .string()
+        .describe(
+          'LDAP search filter. Use {pubkey} placeholder. e.g. "(nostrKey={pubkey})"',
+        ),
+      searchDN: z
+        .string()
+        .optional()
+        .describe("Optional override for the global searchDN"),
+    })
+    .optional()
+    .describe(
+      "LDAP query config to allow access based on LDAP group/attribute.",
+    ),
 });
 
 const LocalStorageSchema = z.object({
@@ -482,6 +498,31 @@ export const DatabaseSchema = z.object({
 
 export type DatabaseConfig = z.infer<typeof DatabaseSchema>;
 
+export const LdapConfigSchema = z.object({
+  enabled: z
+    .boolean()
+    .default(false)
+    .describe("Enable global LDAP support."),
+  url: z
+    .string()
+    .default("")
+    .describe("LDAP server URL, e.g. ldaps://ldap.example.com"),
+  bindDN: z
+    .string()
+    .default("")
+    .describe("LDAP bind DN"),
+  password: z
+    .string()
+    .default("")
+    .describe(
+      "LDAP bind password. Use ${ENV_VAR} syntax to read from environment.",
+    ),
+  searchDN: z
+    .string()
+    .default("")
+    .describe("Default base DN for LDAP searches"),
+});
+
 export const ConfigSchema = z
   .object({
     publicDomain: z
@@ -542,6 +583,9 @@ export const ConfigSchema = z
     report: ReportSchema.optional()
       .transform((v) => v ?? ReportSchema.parse({}))
       .describe("Blob report endpoint settings (BUD-09)."),
+    ldap: LdapConfigSchema.optional()
+      .transform((v) => v ?? LdapConfigSchema.parse({}))
+      .describe("LDAP server configuration."),
   })
   .transform((raw) => {
     // Merge deprecated databasePath into the database section.
@@ -562,3 +606,4 @@ export type ReportConfig = z.infer<typeof ReportSchema>;
 export type ImageOptimizeConfig = z.infer<typeof ImageOptimizeSchema>;
 export type VideoOptimizeConfig = z.infer<typeof VideoOptimizeSchema>;
 export type MediaConfig = z.infer<typeof MediaSchema>;
+export type LdapConfig = z.infer<typeof LdapConfigSchema>;

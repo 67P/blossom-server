@@ -139,7 +139,7 @@ export function buildMediaRouter(
 
   // Hono does not support HEAD-only routes directly; register as GET and
   // the framework strips the body automatically for HEAD requests.
-  app.get("/media", (ctx) => {
+  app.get("/media", async (ctx) => {
     // --- 1. Feature flag ---
     if (!config.media.enabled) {
       return errorResponse(
@@ -189,10 +189,11 @@ export function buildMediaRouter(
       ctx.req.header("content-type");
     if (xContentType) {
       const mimeType = xContentType.split(";")[0].trim();
-      const mimeRule = getFileRule(
+      const mimeRule = await getFileRule(
         { mimeType, pubkey: ctx.get("auth")?.pubkey },
         config.storage.rules,
         config.upload.requirePubkeyInRule,
+        config.ldap,
       );
       if (!mimeRule) {
         if (config.upload.requirePubkeyInRule) {
@@ -294,10 +295,11 @@ export function buildMediaRouter(
       const contentType = ctx.req.header("content-type") ??
         "application/octet-stream";
       const mimeType = contentType.split(";")[0].trim();
-      const mimeRule = getFileRule(
+      const mimeRule = await getFileRule(
         { mimeType, pubkey: auth?.pubkey },
         config.storage.rules,
         config.upload.requirePubkeyInRule,
+        config.ldap,
       );
       if (!mimeRule) {
         await ctx.req.raw.body?.cancel();

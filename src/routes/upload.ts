@@ -105,10 +105,11 @@ export function buildUploadRouter(
     // storage.rules is the upload gate. auth may not be populated for HEAD
     // (auth is optional in preflight), so pass pubkey only when available.
     const preflightPubkey = ctx.get("auth")?.pubkey;
-    const rule = getFileRule(
+    const rule = await getFileRule(
       { mimeType: xContentType, pubkey: preflightPubkey },
       config.storage.rules,
       config.upload.requirePubkeyInRule,
+      config.ldap,
     );
     if (!rule) {
       if (config.upload.requirePubkeyInRule) {
@@ -208,10 +209,11 @@ export function buildUploadRouter(
       "application/octet-stream";
     const mimeType = contentType.split(";")[0].trim();
 
-    const mimeRule = getFileRule(
+    const mimeRule = await getFileRule(
       { mimeType, pubkey: auth?.pubkey },
       config.storage.rules,
       config.upload.requirePubkeyInRule,
+      config.ldap,
     );
     if (!mimeRule) {
       await ctx.req.raw.body?.cancel();

@@ -315,10 +315,11 @@ export function buildMirrorRouter(
       }`,
     );
 
-    const mimeRule = getFileRule(
+    const mimeRule = await getFileRule(
       { mimeType, pubkey: auth?.pubkey },
       config.storage.rules,
-      config.upload.requirePubkeyInRule,
+      config.upload.requirePubkeyInRule, // mirror uses upload allowlist settings
+      config.ldap,
     );
     if (!mimeRule) {
       await originResponse.body?.cancel();

@@ -19,6 +19,7 @@
     "npm:applesauce-loaders@^5.1.0": "5.1.0",
     "npm:applesauce-relay@^5.2.0": "5.2.0",
     "npm:file-type@^19.6.0": "19.6.0",
+    "npm:ldapts@^8.1.7": "8.1.7",
     "npm:nostr-tools@^2.23.3": "2.23.3_typescript@5.9.3",
     "npm:rxjs@^7.8.0": "7.8.2",
     "npm:sharp@~0.34.5": "0.34.5",
@@ -504,6 +505,12 @@
     "js-base64@3.7.8": {
       "integrity": "sha512-hNngCeKxIUQiEUN3GPJOkz4wF/YvdUdbNL9hsBcMQTkKzboD7T/q3OYOuuPZLUE6dBxSGpwhk5mwuDud7JVAow=="
     },
+    "ldapts@8.1.7": {
+      "integrity": "sha512-TJl6T92eIwMf/OJ0hDfKVa6ISwzo+lqCWCI5Mf//ARlKa3LKQZaSrme/H2rCRBhW0DZCQlrsV+fgoW5YHRNLUw==",
+      "dependencies": [
+        "strict-event-emitter-types"
+      ]
+    },
     "libsql@0.5.22": {
       "integrity": "sha512-NscWthMQt7fpU8lqd7LXMvT9pi+KhhmTHAJWUB/Lj6MWa0MKFv0F2V4C6WKKpjCVZl0VwcDz4nOI3CyaT1DDiA==",
       "dependencies": [
@@ -637,6 +644,9 @@
       ],
       "scripts": true
     },
+    "strict-event-emitter-types@2.0.0": {
+      "integrity": "sha512-Nk/brWYpD85WlOgzw5h173aci0Teyv8YdIAEtV+N88nDB0dLlazZyJMIsN6eo1/AR61l+p6CJTG1JIyFaoNEEA=="
+    },
     "strtok3@9.1.1": {
       "integrity": "sha512-FhwotcEqjr241ZbjFzjlIYg6c5/L/s4yBGWSMvJ9UoExiSqL+FnFA/CaeZx17WGaZMS/4SOZp8wH18jSS4R4lw==",
       "dependencies": [
@@ -705,6 +715,7 @@
       "npm:applesauce-loaders@^5.1.0",
       "npm:applesauce-relay@^5.2.0",
       "npm:file-type@^19.6.0",
+      "npm:ldapts@^8.1.7",
       "npm:nostr-tools@^2.23.3",
       "npm:rxjs@^7.8.0",
       "npm:sharp@~0.34.5",
